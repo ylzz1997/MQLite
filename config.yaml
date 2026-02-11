@@ -1,0 +1,30 @@
+# MQLite Configuration
+server:
+  grpc:
+    enabled: true
+    port: 9090
+  http:
+    enabled: true
+    port: 8080
+  tcp:
+    enabled: true
+    port: 7070
+
+persistence:
+  enabled: true
+  aof:
+    fsync: "everysec"        # always | everysec | no
+    dir: "./data"
+    filename: "mqlite.aof"
+    rewrite_min_size: 67108864   # 64MB
+    rewrite_percentage: 100
+  snapshot:
+    enabled: false
+    interval: "5m"
+    filename: "mqlite.snapshot"
+
+log:
+  level: "info"       # debug | info | warn | error
+  format: "console"   # json | console
+
+ack_timeout: "30s"

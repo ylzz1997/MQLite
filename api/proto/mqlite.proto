@@ -1,0 +1,155 @@
+syntax = "proto3";
+
+package mqlite.v1;
+
+option go_package = "mqlite/api/proto/gen;mqlitepb";
+
+// ============================================================
+// MQLite gRPC Service
+// ============================================================
+service MQLiteService {
+  // --- Namespace ---
+  rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
+  rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
+  rpc ListNamespaces(ListNamespacesRequest) returns (ListNamespacesResponse);
+
+  // --- Topic ---
+  rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse);
+  rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse);
+  rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
+
+  // --- Publish ---
+  rpc Publish(PublishRequest) returns (PublishResponse);
+
+  // --- Consume (pull) ---
+  rpc Consume(ConsumeRequest) returns (ConsumeResponse);
+
+  // --- Subscribe (push / server-stream) ---
+  rpc Subscribe(SubscribeRequest) returns (stream Message);
+
+  // --- Ack ---
+  rpc Ack(AckRequest) returns (AckResponse);
+}
+
+// ============================================================
+// Core Message
+// ============================================================
+message Message {
+  string id         = 1;
+  string namespace   = 2;
+  string topic       = 3;
+  int32  queue_id    = 4;
+  bytes  payload     = 5;
+  int64  timestamp   = 6;
+  map<string, string> headers = 7;
+}
+
+// ============================================================
+// Namespace
+// ============================================================
+message CreateNamespaceRequest {
+  string name = 1;
+}
+message CreateNamespaceResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message DeleteNamespaceRequest {
+  string name = 1;
+}
+message DeleteNamespaceResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message ListNamespacesRequest {}
+message ListNamespacesResponse {
+  repeated string namespaces = 1;
+}
+
+// ============================================================
+// Topic
+// ============================================================
+message CreateTopicRequest {
+  string namespace   = 1;
+  string name        = 2;
+  int32  queue_count = 3;
+}
+message CreateTopicResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message DeleteTopicRequest {
+  string namespace = 1;
+  string name      = 2;
+}
+message DeleteTopicResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message ListTopicsRequest {
+  string namespace = 1;
+}
+message ListTopicsResponse {
+  repeated TopicInfo topics = 1;
+}
+message TopicInfo {
+  string name        = 1;
+  int32  queue_count = 2;
+}
+
+// ============================================================
+// Publish
+// ============================================================
+message PublishRequest {
+  string namespace              = 1;
+  string topic                  = 2;
+  bytes  payload                = 3;
+  map<string, string> headers   = 4;
+  string routing_key            = 5; // optional: hash-based routing
+  int32  queue_id               = 6; // optional: direct target (-1 = auto)
+}
+message PublishResponse {
+  string message_id = 1;
+  int32  queue_id   = 2;
+}
+
+// ============================================================
+// Consume
+// ============================================================
+message ConsumeRequest {
+  string namespace  = 1;
+  string topic      = 2;
+  int32  queue_id   = 3;
+  int32  batch_size = 4; // default 1
+  bool   auto_ack   = 5;
+}
+message ConsumeResponse {
+  repeated Message messages = 1;
+}
+
+// ============================================================
+// Subscribe
+// ============================================================
+message SubscribeRequest {
+  string namespace = 1;
+  string topic     = 2;
+  int32  queue_id  = 3;
+  bool   auto_ack  = 4;
+}
+
+// ============================================================
+// Ack
+// ============================================================
+message AckRequest {
+  string namespace            = 1;
+  string topic                = 2;
+  int32  queue_id             = 3;
+  repeated string message_ids = 4;
+}
+message AckResponse {
+  bool success = 1;
+}
