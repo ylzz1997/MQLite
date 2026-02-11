@@ -22,6 +22,18 @@ var (
 	buildTime = "unknown"
 )
 
+func printBanner() {
+	const banner = `
+  __  __  ___  _     _ _       
+ |  \/  |/ _ \| |   (_) |_ ___ 
+ | |\/| | | | | |   | | __/ _ \
+ | |  | | |_| | |___| | ||  __/
+ |_|  |_|\__\_\_____|_|\__\___|
+`
+	fmt.Print("\033[36m\033[1m" + banner + "\033[0m")
+	fmt.Printf("  \033[2mv%s  Lightweight Message Queue Server\033[0m\n\n", version)
+}
+
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to configuration file")
 	showVersion := flag.Bool("version", false, "show version")
@@ -31,6 +43,8 @@ func main() {
 		fmt.Printf("MQLite %s (built %s)\n", version, buildTime)
 		os.Exit(0)
 	}
+
+	printBanner()
 
 	// Load configuration
 	cfg, err := config.Load(*configPath)
