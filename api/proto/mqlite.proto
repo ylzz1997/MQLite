@@ -17,6 +17,8 @@ service MQLiteService {
   rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse);
   rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse);
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
+  rpc ResizeTopic(ResizeTopicRequest) returns (ResizeTopicResponse);
+  rpc RebalanceTopic(RebalanceTopicRequest) returns (RebalanceTopicResponse);
 
   // --- Publish ---
   rpc Publish(PublishRequest) returns (PublishResponse);
@@ -99,6 +101,29 @@ message ListTopicsResponse {
 message TopicInfo {
   string name        = 1;
   int32  queue_count = 2;
+  uint64 version     = 3;
+}
+
+message ResizeTopicRequest {
+  string namespace       = 1;
+  string name            = 2;
+  int32  new_queue_count = 3;
+}
+message ResizeTopicResponse {
+  bool   success         = 1;
+  string message         = 2;
+  int32  new_queue_count = 3;
+  uint64 version         = 4;
+  bool   draining        = 5;
+}
+
+message RebalanceTopicRequest {
+  string namespace = 1;
+  string name      = 2;
+}
+message RebalanceTopicResponse {
+  bool   success = 1;
+  string message = 2;
 }
 
 // ============================================================
@@ -173,6 +198,8 @@ message TCPCommand {
     ConsumeRequest          consume           = 17;
     SubscribeRequest        subscribe         = 18;
     AckRequest              ack               = 19;
+    ResizeTopicRequest      resize_topic      = 20;
+    RebalanceTopicRequest   rebalance_topic   = 21;
   }
 }
 
@@ -192,5 +219,7 @@ message TCPResponse {
     ConsumeResponse          consume_response            = 17;
     Message                  subscribe_message           = 18;
     AckResponse              ack_response                = 19;
+    ResizeTopicResponse      resize_topic_response       = 20;
+    RebalanceTopicResponse   rebalance_topic_response    = 21;
   }
 }

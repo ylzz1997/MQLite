@@ -10,7 +10,7 @@
 - **AOF 持久化** — 类 Redis 的 Append-Only File，支持 always/everysec/no 三种 fsync 策略
 - **AOF 重写** — 后台自动压缩 AOF 文件
 - **消息确认 (Ack)** — 支持手动/自动确认，超时自动重投
-- **Protobuf 内部传输** — gRPC 使用 Protobuf，HTTP/TCP 支持 JSON
+- **Protobuf 内部传输** — gRPC 使用 Protobuf，TCP 支持 JSON 和 Protobuf 双编码，HTTP 支持 JSON
 
 ## 快速开始
 
@@ -21,6 +21,36 @@ mkdir bin
 go build -o ./bin/mqlite ./cmd/mqlite
 go build -o ./bin/mqlite_cli ./cmd/mqlite-cli
 ```
+
+### Protobuf 代码生成
+
+修改 `api/proto/mqlite.proto` 后需要重新生成 Go 代码。
+
+**前置依赖：**
+
+```bash
+# 安装 protoc 编译器（macOS）
+brew install protobuf
+
+# 安装 Go 插件
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+```
+
+**生成命令：**
+
+```bash
+protoc \
+  --go_out=api/proto/gen --go_opt=paths=source_relative \
+  --go-grpc_out=api/proto/gen --go-grpc_opt=paths=source_relative \
+  -I api/proto \
+  api/proto/mqlite.proto
+```
+
+生成的文件位于 `api/proto/gen/` 目录：
+
+- `mqlite.pb.go` — 消息类型（含 gRPC 请求/响应及 TCP 帧 `TCPCommand`/`TCPResponse`）
+- `mqlite_grpc.pb.go` — gRPC 服务接口与客户端
 
 ### 运行
 
@@ -165,13 +195,15 @@ grpcurl -plaintext -d '{"namespace": "production", "topic": "orders", "payload":
 
 ## TCP 协议
 
-TCP 使用自定义帧协议：
+TCP 使用自定义帧协议，支持 JSON 和 Protobuf 两种编码：
 
 ```
-[4 字节: payload 长度 (big-endian)]
-[1 字节: 编码标记 (0=JSON)]
-[N 字节: JSON payload]
+[4 字节: payload 长度 (big-endian, 含编码标记)]
+[1 字节: 编码标记 (0=JSON, 1=Protobuf)]
+[N 字节: payload]
 ```
+
+### JSON 编码 (encoding=0)
 
 命令格式：
 
@@ -187,7 +219,66 @@ TCP 使用自定义帧协议：
 }
 ```
 
-支持的 action: `create_namespace`, `delete_namespace`, `list_namespaces`, `create_topic`, `delete_topic`, `list_topics`, `publish`, `consume`, `subscribe`, `ack`
+响应格式：
+
+```json
+{
+  "status": "ok",
+  "data": {"message_id": "uuid-xxx", "queue_id": 0}
+}
+```
+
+### Protobuf 编码 (encoding=1)
+
+使用 `mqlite.proto` 中定义的 `TCPCommand` 和 `TCPResponse` 消息体：
+
+- **TCPCommand** — `action` 字段指定操作，`oneof data` 携带对应的 Protobuf 请求（如 `PublishRequest`、`ConsumeRequest` 等）
+- **TCPResponse** — `status` 字段表示结果，`error` 携带错误信息，`oneof data` 返回对应的 Protobuf 响应
+
+```protobuf
+message TCPCommand {
+  string action = 1;
+  oneof data {
+    CreateNamespaceRequest create_namespace = 10;
+    PublishRequest         publish          = 16;
+    ConsumeRequest         consume          = 17;
+    // ... 共 10 种操作
+  }
+}
+
+message TCPResponse {
+  string status = 1;
+  string error  = 2;
+  oneof data {
+    CreateNamespaceResponse create_namespace_response = 10;
+    PublishResponse         publish_response          = 16;
+    ConsumeResponse         consume_response          = 17;
+    // ... 对应的响应类型
+  }
+}
+```
+
+Protobuf 编码相比 JSON 具有更小的传输体积和更快的序列化速度，适合高吞吐场景。
+
+### 支持的 action
+
+`create_namespace`, `delete_namespace`, `list_namespaces`, `create_topic`, `delete_topic`, `list_topics`, `publish`, `consume`, `subscribe`, `ack`
+
+### CLI 测试
+
+```bash
+# JSON TCP 命令（tcp-* 前缀）
+mqlite> tcp-pub production orders {"key":"value"}
+mqlite> tcp-consume production orders 0 10
+
+# Protobuf TCP 命令（ptcp-* 前缀）
+mqlite> ptcp-create-ns production
+mqlite> ptcp-create-topic production orders 3
+mqlite> ptcp-pub production orders {"key":"value"}
+mqlite> ptcp-consume production orders 0 10
+mqlite> ptcp-list-ns
+mqlite> ptcp-list-topics production
+```
 
 ## 架构
 

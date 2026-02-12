@@ -25,6 +25,8 @@ const (
 	MQLiteService_CreateTopic_FullMethodName     = "/mqlite.v1.MQLiteService/CreateTopic"
 	MQLiteService_DeleteTopic_FullMethodName     = "/mqlite.v1.MQLiteService/DeleteTopic"
 	MQLiteService_ListTopics_FullMethodName      = "/mqlite.v1.MQLiteService/ListTopics"
+	MQLiteService_ResizeTopic_FullMethodName     = "/mqlite.v1.MQLiteService/ResizeTopic"
+	MQLiteService_RebalanceTopic_FullMethodName  = "/mqlite.v1.MQLiteService/RebalanceTopic"
 	MQLiteService_Publish_FullMethodName         = "/mqlite.v1.MQLiteService/Publish"
 	MQLiteService_Consume_FullMethodName         = "/mqlite.v1.MQLiteService/Consume"
 	MQLiteService_Subscribe_FullMethodName       = "/mqlite.v1.MQLiteService/Subscribe"
@@ -47,6 +49,8 @@ type MQLiteServiceClient interface {
 	CreateTopic(ctx context.Context, in *CreateTopicRequest, opts ...grpc.CallOption) (*CreateTopicResponse, error)
 	DeleteTopic(ctx context.Context, in *DeleteTopicRequest, opts ...grpc.CallOption) (*DeleteTopicResponse, error)
 	ListTopics(ctx context.Context, in *ListTopicsRequest, opts ...grpc.CallOption) (*ListTopicsResponse, error)
+	ResizeTopic(ctx context.Context, in *ResizeTopicRequest, opts ...grpc.CallOption) (*ResizeTopicResponse, error)
+	RebalanceTopic(ctx context.Context, in *RebalanceTopicRequest, opts ...grpc.CallOption) (*RebalanceTopicResponse, error)
 	// --- Publish ---
 	Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*PublishResponse, error)
 	// --- Consume (pull) ---
@@ -125,6 +129,26 @@ func (c *mQLiteServiceClient) ListTopics(ctx context.Context, in *ListTopicsRequ
 	return out, nil
 }
 
+func (c *mQLiteServiceClient) ResizeTopic(ctx context.Context, in *ResizeTopicRequest, opts ...grpc.CallOption) (*ResizeTopicResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResizeTopicResponse)
+	err := c.cc.Invoke(ctx, MQLiteService_ResizeTopic_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mQLiteServiceClient) RebalanceTopic(ctx context.Context, in *RebalanceTopicRequest, opts ...grpc.CallOption) (*RebalanceTopicResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RebalanceTopicResponse)
+	err := c.cc.Invoke(ctx, MQLiteService_RebalanceTopic_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *mQLiteServiceClient) Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*PublishResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PublishResponse)
@@ -190,6 +214,8 @@ type MQLiteServiceServer interface {
 	CreateTopic(context.Context, *CreateTopicRequest) (*CreateTopicResponse, error)
 	DeleteTopic(context.Context, *DeleteTopicRequest) (*DeleteTopicResponse, error)
 	ListTopics(context.Context, *ListTopicsRequest) (*ListTopicsResponse, error)
+	ResizeTopic(context.Context, *ResizeTopicRequest) (*ResizeTopicResponse, error)
+	RebalanceTopic(context.Context, *RebalanceTopicRequest) (*RebalanceTopicResponse, error)
 	// --- Publish ---
 	Publish(context.Context, *PublishRequest) (*PublishResponse, error)
 	// --- Consume (pull) ---
@@ -225,6 +251,12 @@ func (UnimplementedMQLiteServiceServer) DeleteTopic(context.Context, *DeleteTopi
 }
 func (UnimplementedMQLiteServiceServer) ListTopics(context.Context, *ListTopicsRequest) (*ListTopicsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListTopics not implemented")
+}
+func (UnimplementedMQLiteServiceServer) ResizeTopic(context.Context, *ResizeTopicRequest) (*ResizeTopicResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResizeTopic not implemented")
+}
+func (UnimplementedMQLiteServiceServer) RebalanceTopic(context.Context, *RebalanceTopicRequest) (*RebalanceTopicResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RebalanceTopic not implemented")
 }
 func (UnimplementedMQLiteServiceServer) Publish(context.Context, *PublishRequest) (*PublishResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Publish not implemented")
@@ -367,6 +399,42 @@ func _MQLiteService_ListTopics_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MQLiteService_ResizeTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResizeTopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MQLiteServiceServer).ResizeTopic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MQLiteService_ResizeTopic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MQLiteServiceServer).ResizeTopic(ctx, req.(*ResizeTopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MQLiteService_RebalanceTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RebalanceTopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MQLiteServiceServer).RebalanceTopic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MQLiteService_RebalanceTopic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MQLiteServiceServer).RebalanceTopic(ctx, req.(*RebalanceTopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MQLiteService_Publish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PublishRequest)
 	if err := dec(in); err != nil {
@@ -462,6 +530,14 @@ var MQLiteService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListTopics",
 			Handler:    _MQLiteService_ListTopics_Handler,
+		},
+		{
+			MethodName: "ResizeTopic",
+			Handler:    _MQLiteService_ResizeTopic_Handler,
+		},
+		{
+			MethodName: "RebalanceTopic",
+			Handler:    _MQLiteService_RebalanceTopic_Handler,
 		},
 		{
 			MethodName: "Publish",

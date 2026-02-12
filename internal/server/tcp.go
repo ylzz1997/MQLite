@@ -98,6 +98,17 @@ type tcpAckData struct {
 	MessageIDs []string `json:"message_ids"`
 }
 
+type tcpResizeTopicData struct {
+	Namespace     string `json:"namespace"`
+	Name          string `json:"name"`
+	NewQueueCount int    `json:"new_queue_count"`
+}
+
+type tcpRebalanceTopicData struct {
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
+}
+
 // ==========================================================
 // TCPServer
 // ==========================================================
@@ -360,6 +371,31 @@ func (s *TCPServer) handleCommand(conn net.Conn, cmd TCPCommand, encoding byte, 
 		}
 		return &TCPResponse{Status: "ok", Data: "messages acknowledged"}
 
+	case "resize_topic":
+		var data tcpResizeTopicData
+		if err := json.Unmarshal(cmd.Data, &data); err != nil {
+			return &TCPResponse{Status: "error", Error: err.Error()}
+		}
+		resp, err := s.broker.ResizeTopic(ctx, data.Namespace, data.Name, data.NewQueueCount)
+		if err != nil {
+			return &TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &TCPResponse{Status: "ok", Data: map[string]interface{}{
+			"new_queue_count": resp.NewQueueCount,
+			"version":         resp.Version,
+			"draining":        resp.Draining,
+		}}
+
+	case "rebalance_topic":
+		var data tcpRebalanceTopicData
+		if err := json.Unmarshal(cmd.Data, &data); err != nil {
+			return &TCPResponse{Status: "error", Error: err.Error()}
+		}
+		if err := s.broker.RebalanceTopic(ctx, data.Namespace, data.Name); err != nil {
+			return &TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &TCPResponse{Status: "ok", Data: "topic rebalanced"}
+
 	default:
 		return &TCPResponse{Status: "error", Error: fmt.Sprintf("unknown action: %s", cmd.Action)}
 	}
@@ -508,6 +544,39 @@ func (s *TCPServer) handleProtoCommand(conn net.Conn, cmd *pb.TCPCommand, writer
 		return &pb.TCPResponse{
 			Status: "ok",
 			Data:   &pb.TCPResponse_AckResponse{AckResponse: &pb.AckResponse{Success: true}},
+		}
+
+	case "resize_topic":
+		data := cmd.GetResizeTopic()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing resize_topic data"}
+		}
+		resp, err := s.broker.ResizeTopic(ctx, data.Namespace, data.Name, int(data.NewQueueCount))
+		if err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data: &pb.TCPResponse_ResizeTopicResponse{ResizeTopicResponse: &pb.ResizeTopicResponse{
+				Success:       true,
+				Message:       "topic resized",
+				NewQueueCount: int32(resp.NewQueueCount),
+				Version:       resp.Version,
+				Draining:      resp.Draining,
+			}},
+		}
+
+	case "rebalance_topic":
+		data := cmd.GetRebalanceTopic()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing rebalance_topic data"}
+		}
+		if err := s.broker.RebalanceTopic(ctx, data.Namespace, data.Name); err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_RebalanceTopicResponse{RebalanceTopicResponse: &pb.RebalanceTopicResponse{Success: true, Message: "topic rebalanced"}},
 		}
 
 	default:

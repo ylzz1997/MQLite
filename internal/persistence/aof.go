@@ -23,6 +23,8 @@ const (
 	OpSteal           uint8 = 5
 	OpDeleteNamespace uint8 = 6
 	OpDeleteTopic     uint8 = 7
+	OpResizeTopic     uint8 = 8
+	OpRebalance       uint8 = 9
 )
 
 // AOFRecord is the envelope for a single AOF entry.
@@ -76,6 +78,19 @@ type DeleteNamespaceOp struct {
 type DeleteTopicOp struct {
 	Namespace string `json:"ns"`
 	Name      string `json:"name"`
+}
+
+type ResizeTopicOp struct {
+	Namespace     string `json:"ns"`
+	Name          string `json:"name"`
+	NewQueueCount int    `json:"new_qcount"`
+	Version       uint64 `json:"version"`
+}
+
+type RebalanceOp struct {
+	Namespace string         `json:"ns"`
+	Topic     string         `json:"topic"`
+	Moves     map[string]int `json:"moves"` // messageID -> newQueueID
 }
 
 // ==========================================================
@@ -252,6 +267,23 @@ func (w *AOFWriter) WriteDeleteTopic(namespace, name string) error {
 	return w.writeRecord(OpDeleteTopic, &DeleteTopicOp{
 		Namespace: namespace,
 		Name:      name,
+	})
+}
+
+func (w *AOFWriter) WriteResizeTopic(namespace, name string, newQueueCount int, version uint64) error {
+	return w.writeRecord(OpResizeTopic, &ResizeTopicOp{
+		Namespace:     namespace,
+		Name:          name,
+		NewQueueCount: newQueueCount,
+		Version:       version,
+	})
+}
+
+func (w *AOFWriter) WriteRebalance(namespace, topic string, moves map[string]int) error {
+	return w.writeRecord(OpRebalance, &RebalanceOp{
+		Namespace: namespace,
+		Topic:     topic,
+		Moves:     moves,
 	})
 }
 

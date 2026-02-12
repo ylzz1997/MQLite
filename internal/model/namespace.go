@@ -10,6 +10,7 @@ import (
 type TopicInfo struct {
 	Name       string `json:"name"`
 	QueueCount int    `json:"queue_count"`
+	Version    uint64 `json:"version"`
 }
 
 // Namespace is the top-level isolation domain containing multiple topics.
@@ -77,6 +78,7 @@ func (ns *Namespace) ListTopics() []TopicInfo {
 		infos = append(infos, TopicInfo{
 			Name:       topic.Name,
 			QueueCount: topic.QueueCount,
+			Version:    topic.Version(),
 		})
 	}
 	return infos

@@ -118,6 +118,13 @@ func (q *Queue) Len() int {
 	return len(q.pending)
 }
 
+// UnackedLen returns the number of unacknowledged messages.
+func (q *Queue) UnackedLen() int {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	return len(q.unacked)
+}
+
 // LenLocked returns the number of pending messages. Caller must hold the lock.
 func (q *Queue) LenLocked() int {
 	return len(q.pending)
@@ -171,6 +178,15 @@ func (q *Queue) AllUnackedLocked() []*Message {
 		result = append(result, um.msg)
 	}
 	return result
+}
+
+// ForceRedeliverAllLocked moves all unacked messages back to pending immediately.
+// Caller must hold the lock.
+func (q *Queue) ForceRedeliverAllLocked() {
+	for id, um := range q.unacked {
+		q.pending = append(q.pending, um.msg)
+		delete(q.unacked, id)
+	}
 }
 
 // redeliveryLoop periodically checks for timed-out unacked messages and requeues them.

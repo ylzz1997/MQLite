@@ -9,10 +9,11 @@ import (
 
 // Config is the root configuration.
 type Config struct {
-	Server      ServerConfig      `yaml:"server"`
-	Persistence PersistenceConfig `yaml:"persistence"`
-	Log         LogConfig         `yaml:"log"`
-	AckTimeout  time.Duration     `yaml:"ack_timeout"`
+	Server       ServerConfig      `yaml:"server"`
+	Persistence  PersistenceConfig `yaml:"persistence"`
+	Log          LogConfig         `yaml:"log"`
+	AckTimeout   time.Duration     `yaml:"ack_timeout"`
+	DrainTimeout time.Duration     `yaml:"drain_timeout"` // -1 = no timeout
 }
 
 // ServerConfig holds the configuration for all protocol servers.
@@ -90,7 +91,8 @@ func DefaultConfig() *Config {
 			Level:  "info",
 			Format: "console",
 		},
-		AckTimeout: 30 * time.Second,
+		AckTimeout:   30 * time.Second,
+		DrainTimeout: 30 * time.Second,
 	}
 }
 

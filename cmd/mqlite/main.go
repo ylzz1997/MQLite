@@ -99,7 +99,7 @@ func main() {
 	}
 
 	// --- Create Broker ---
-	b := broker.New(logger, aofWriter, rewriter, cfg.AckTimeout)
+	b := broker.New(logger, aofWriter, rewriter, cfg.AckTimeout, cfg.DrainTimeout)
 
 	// Load recovered state
 	if recoveryState != nil && len(recoveryState.Namespaces) > 0 {

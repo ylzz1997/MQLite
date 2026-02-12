@@ -194,6 +194,46 @@ func applyRecord(state *RecoveryState, opType uint8, payload []byte, ackTimeout 
 		removeByIDs(queue, op.MessageIDs)
 		queue.Unlock()
 
+	case OpResizeTopic:
+		var op ResizeTopicOp
+		if err := json.Unmarshal(payload, &op); err != nil {
+			return err
+		}
+		ns, exists := state.Namespaces[op.Namespace]
+		if !exists {
+			return nil
+		}
+		topic, err := ns.GetTopic(op.Name)
+		if err != nil {
+			return nil
+		}
+		currentCount := topic.QueueCount
+		if op.NewQueueCount > currentCount {
+			// Scale out: add queues
+			topic.AddQueues(op.NewQueueCount - currentCount)
+		} else if op.NewQueueCount < currentCount {
+			// Scale in: remove tail queues (they should be empty after drain)
+			topic.FinalizeResizeTo(op.NewQueueCount)
+		}
+
+	case OpRebalance:
+		var op RebalanceOp
+		if err := json.Unmarshal(payload, &op); err != nil {
+			return err
+		}
+		ns, exists := state.Namespaces[op.Namespace]
+		if !exists {
+			return nil
+		}
+		topic, err := ns.GetTopic(op.Topic)
+		if err != nil {
+			return nil
+		}
+		// Apply each move: find message in current queue, move to new queue
+		for msgID, newQueueID := range op.Moves {
+			moveMessageByID(topic, msgID, newQueueID)
+		}
+
 	case OpSteal:
 		var op StealOp
 		if err := json.Unmarshal(payload, &op); err != nil {
@@ -285,4 +325,45 @@ func moveByIDs(src, tgt *model.Queue, idSet map[string]bool) {
 func clearAndReplace(q *model.Queue, msgs []*model.Message) {
 	q.ClearPendingLocked()
 	q.PushBatchLocked(msgs)
+}
+
+// moveMessageByID finds a message by ID across all queues and moves it to the target queue.
+func moveMessageByID(topic *model.Topic, msgID string, newQueueID int) {
+	tgtQueue, err := topic.GetQueue(newQueueID)
+	if err != nil {
+		return
+	}
+
+	// Search all queues for the message
+	for i := 0; i < topic.QueueCount; i++ {
+		srcQueue, err := topic.GetQueue(i)
+		if err != nil {
+			continue
+		}
+		if i == newQueueID {
+			continue
+		}
+
+		srcQueue.Lock()
+		pending := srcQueue.AllPendingLocked()
+		found := false
+		remaining := make([]*model.Message, 0, len(pending))
+		var movedMsg *model.Message
+		for _, msg := range pending {
+			if msg.ID == msgID {
+				found = true
+				movedMsg = msg
+			} else {
+				remaining = append(remaining, msg)
+			}
+		}
+		if found {
+			clearAndReplace(srcQueue, remaining)
+			srcQueue.Unlock()
+			movedMsg.QueueID = newQueueID
+			tgtQueue.Push(movedMsg)
+			return
+		}
+		srcQueue.Unlock()
+	}
 }

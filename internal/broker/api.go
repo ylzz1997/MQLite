@@ -17,6 +17,8 @@ type API interface {
 	CreateTopic(ctx context.Context, namespace, name string, queueCount int) error
 	DeleteTopic(ctx context.Context, namespace, name string) error
 	ListTopics(ctx context.Context, namespace string) ([]model.TopicInfo, error)
+	ResizeTopic(ctx context.Context, namespace, name string, newQueueCount int) (*ResizeTopicResponse, error)
+	RebalanceTopic(ctx context.Context, namespace, name string) error
 
 	// Message operations
 	Publish(ctx context.Context, req *PublishRequest) (*PublishResponse, error)
@@ -59,4 +61,11 @@ type SubscribeRequest struct {
 	Topic     string
 	QueueID   int
 	AutoAck   bool
+}
+
+// ResizeTopicResponse contains the result of a resize operation.
+type ResizeTopicResponse struct {
+	NewQueueCount int
+	Version       uint64
+	Draining      bool // true if scale-in drain started (async completion)
 }

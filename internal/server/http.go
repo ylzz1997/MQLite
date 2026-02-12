@@ -55,6 +55,10 @@ func (s *HTTPServer) setupRoutes() {
 		v1.DELETE("/namespaces/:namespace/topics/:topic", s.deleteTopic)
 		v1.GET("/namespaces/:namespace/topics", s.listTopics)
 
+		// Topic resize / rebalance
+		v1.PUT("/namespaces/:namespace/topics/:topic/resize", s.resizeTopic)
+		v1.POST("/namespaces/:namespace/topics/:topic/rebalance", s.rebalanceTopic)
+
 		// Publish
 		v1.POST("/namespaces/:namespace/topics/:topic/publish", s.publish)
 
@@ -122,6 +126,10 @@ type publishReq struct {
 type consumeReq struct {
 	BatchSize int  `json:"batch_size,omitempty"`
 	AutoAck   bool `json:"auto_ack,omitempty"`
+}
+
+type resizeTopicReq struct {
+	NewQueueCount int `json:"new_queue_count" binding:"required,min=1"`
 }
 
 type ackReq struct {
@@ -200,6 +208,45 @@ func (s *HTTPServer) listTopics(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, apiResponse{Success: true, Data: infos})
+}
+
+func (s *HTTPServer) resizeTopic(c *gin.Context) {
+	namespace := c.Param("namespace")
+	topic := c.Param("topic")
+
+	var req resizeTopicReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, apiResponse{Success: false, Message: err.Error()})
+		return
+	}
+
+	resp, err := s.broker.ResizeTopic(c.Request.Context(), namespace, topic, req.NewQueueCount)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, apiResponse{Success: false, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, apiResponse{
+		Success: true,
+		Message: "topic resized",
+		Data: gin.H{
+			"new_queue_count": resp.NewQueueCount,
+			"version":         resp.Version,
+			"draining":        resp.Draining,
+		},
+	})
+}
+
+func (s *HTTPServer) rebalanceTopic(c *gin.Context) {
+	namespace := c.Param("namespace")
+	topic := c.Param("topic")
+
+	if err := s.broker.RebalanceTopic(c.Request.Context(), namespace, topic); err != nil {
+		c.JSON(http.StatusBadRequest, apiResponse{Success: false, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, apiResponse{Success: true, Message: "topic rebalanced"})
 }
 
 func (s *HTTPServer) publish(c *gin.Context) {

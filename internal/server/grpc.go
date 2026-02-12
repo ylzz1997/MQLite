@@ -178,3 +178,25 @@ func (s *GRPCServer) Ack(ctx context.Context, req *pb.AckRequest) (*pb.AckRespon
 	}
 	return &pb.AckResponse{Success: true}, nil
 }
+
+func (s *GRPCServer) ResizeTopic(ctx context.Context, req *pb.ResizeTopicRequest) (*pb.ResizeTopicResponse, error) {
+	resp, err := s.broker.ResizeTopic(ctx, req.GetNamespace(), req.GetName(), int(req.GetNewQueueCount()))
+	if err != nil {
+		return &pb.ResizeTopicResponse{Success: false, Message: err.Error()}, nil
+	}
+	return &pb.ResizeTopicResponse{
+		Success:       true,
+		Message:       "topic resized",
+		NewQueueCount: int32(resp.NewQueueCount),
+		Version:       resp.Version,
+		Draining:      resp.Draining,
+	}, nil
+}
+
+func (s *GRPCServer) RebalanceTopic(ctx context.Context, req *pb.RebalanceTopicRequest) (*pb.RebalanceTopicResponse, error) {
+	err := s.broker.RebalanceTopic(ctx, req.GetNamespace(), req.GetName())
+	if err != nil {
+		return &pb.RebalanceTopicResponse{Success: false, Message: err.Error()}, nil
+	}
+	return &pb.RebalanceTopicResponse{Success: true, Message: "topic rebalanced"}, nil
+}

@@ -28,3 +28,8 @@ log:
   format: "console"   # json | console
 
 ack_timeout: "30s"
+
+# Drain timeout for queue scale-in.
+# Queues not drained within this duration will be force-rebalanced.
+# Set to -1 to disable timeout (wait indefinitely).
+drain_timeout: "30s"

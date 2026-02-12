@@ -702,6 +702,7 @@ type TopicInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	QueueCount    int32                  `protobuf:"varint,2,opt,name=queue_count,json=queueCount,proto3" json:"queue_count,omitempty"`
+	Version       uint64                 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -750,6 +751,253 @@ func (x *TopicInfo) GetQueueCount() int32 {
 	return 0
 }
 
+func (x *TopicInfo) GetVersion() uint64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+type ResizeTopicRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Namespace     string                 `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	NewQueueCount int32                  `protobuf:"varint,3,opt,name=new_queue_count,json=newQueueCount,proto3" json:"new_queue_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResizeTopicRequest) Reset() {
+	*x = ResizeTopicRequest{}
+	mi := &file_mqlite_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResizeTopicRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResizeTopicRequest) ProtoMessage() {}
+
+func (x *ResizeTopicRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mqlite_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResizeTopicRequest.ProtoReflect.Descriptor instead.
+func (*ResizeTopicRequest) Descriptor() ([]byte, []int) {
+	return file_mqlite_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ResizeTopicRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *ResizeTopicRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ResizeTopicRequest) GetNewQueueCount() int32 {
+	if x != nil {
+		return x.NewQueueCount
+	}
+	return 0
+}
+
+type ResizeTopicResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	NewQueueCount int32                  `protobuf:"varint,3,opt,name=new_queue_count,json=newQueueCount,proto3" json:"new_queue_count,omitempty"`
+	Version       uint64                 `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"`
+	Draining      bool                   `protobuf:"varint,5,opt,name=draining,proto3" json:"draining,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResizeTopicResponse) Reset() {
+	*x = ResizeTopicResponse{}
+	mi := &file_mqlite_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResizeTopicResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResizeTopicResponse) ProtoMessage() {}
+
+func (x *ResizeTopicResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mqlite_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResizeTopicResponse.ProtoReflect.Descriptor instead.
+func (*ResizeTopicResponse) Descriptor() ([]byte, []int) {
+	return file_mqlite_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ResizeTopicResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ResizeTopicResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ResizeTopicResponse) GetNewQueueCount() int32 {
+	if x != nil {
+		return x.NewQueueCount
+	}
+	return 0
+}
+
+func (x *ResizeTopicResponse) GetVersion() uint64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *ResizeTopicResponse) GetDraining() bool {
+	if x != nil {
+		return x.Draining
+	}
+	return false
+}
+
+type RebalanceTopicRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Namespace     string                 `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RebalanceTopicRequest) Reset() {
+	*x = RebalanceTopicRequest{}
+	mi := &file_mqlite_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RebalanceTopicRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RebalanceTopicRequest) ProtoMessage() {}
+
+func (x *RebalanceTopicRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mqlite_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RebalanceTopicRequest.ProtoReflect.Descriptor instead.
+func (*RebalanceTopicRequest) Descriptor() ([]byte, []int) {
+	return file_mqlite_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *RebalanceTopicRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *RebalanceTopicRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type RebalanceTopicResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RebalanceTopicResponse) Reset() {
+	*x = RebalanceTopicResponse{}
+	mi := &file_mqlite_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RebalanceTopicResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RebalanceTopicResponse) ProtoMessage() {}
+
+func (x *RebalanceTopicResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mqlite_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RebalanceTopicResponse.ProtoReflect.Descriptor instead.
+func (*RebalanceTopicResponse) Descriptor() ([]byte, []int) {
+	return file_mqlite_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *RebalanceTopicResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *RebalanceTopicResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 // ============================================================
 // Publish
 // ============================================================
@@ -767,7 +1015,7 @@ type PublishRequest struct {
 
 func (x *PublishRequest) Reset() {
 	*x = PublishRequest{}
-	mi := &file_mqlite_proto_msgTypes[14]
+	mi := &file_mqlite_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -779,7 +1027,7 @@ func (x *PublishRequest) String() string {
 func (*PublishRequest) ProtoMessage() {}
 
 func (x *PublishRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[14]
+	mi := &file_mqlite_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -792,7 +1040,7 @@ func (x *PublishRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishRequest.ProtoReflect.Descriptor instead.
 func (*PublishRequest) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{14}
+	return file_mqlite_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *PublishRequest) GetNamespace() string {
@@ -847,7 +1095,7 @@ type PublishResponse struct {
 
 func (x *PublishResponse) Reset() {
 	*x = PublishResponse{}
-	mi := &file_mqlite_proto_msgTypes[15]
+	mi := &file_mqlite_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -859,7 +1107,7 @@ func (x *PublishResponse) String() string {
 func (*PublishResponse) ProtoMessage() {}
 
 func (x *PublishResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[15]
+	mi := &file_mqlite_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -872,7 +1120,7 @@ func (x *PublishResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishResponse.ProtoReflect.Descriptor instead.
 func (*PublishResponse) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{15}
+	return file_mqlite_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *PublishResponse) GetMessageId() string {
@@ -905,7 +1153,7 @@ type ConsumeRequest struct {
 
 func (x *ConsumeRequest) Reset() {
 	*x = ConsumeRequest{}
-	mi := &file_mqlite_proto_msgTypes[16]
+	mi := &file_mqlite_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -917,7 +1165,7 @@ func (x *ConsumeRequest) String() string {
 func (*ConsumeRequest) ProtoMessage() {}
 
 func (x *ConsumeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[16]
+	mi := &file_mqlite_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -930,7 +1178,7 @@ func (x *ConsumeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConsumeRequest.ProtoReflect.Descriptor instead.
 func (*ConsumeRequest) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{16}
+	return file_mqlite_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ConsumeRequest) GetNamespace() string {
@@ -977,7 +1225,7 @@ type ConsumeResponse struct {
 
 func (x *ConsumeResponse) Reset() {
 	*x = ConsumeResponse{}
-	mi := &file_mqlite_proto_msgTypes[17]
+	mi := &file_mqlite_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -989,7 +1237,7 @@ func (x *ConsumeResponse) String() string {
 func (*ConsumeResponse) ProtoMessage() {}
 
 func (x *ConsumeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[17]
+	mi := &file_mqlite_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1002,7 +1250,7 @@ func (x *ConsumeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConsumeResponse.ProtoReflect.Descriptor instead.
 func (*ConsumeResponse) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{17}
+	return file_mqlite_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ConsumeResponse) GetMessages() []*Message {
@@ -1027,7 +1275,7 @@ type SubscribeRequest struct {
 
 func (x *SubscribeRequest) Reset() {
 	*x = SubscribeRequest{}
-	mi := &file_mqlite_proto_msgTypes[18]
+	mi := &file_mqlite_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1039,7 +1287,7 @@ func (x *SubscribeRequest) String() string {
 func (*SubscribeRequest) ProtoMessage() {}
 
 func (x *SubscribeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[18]
+	mi := &file_mqlite_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1052,7 +1300,7 @@ func (x *SubscribeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeRequest) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{18}
+	return file_mqlite_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *SubscribeRequest) GetNamespace() string {
@@ -1098,7 +1346,7 @@ type AckRequest struct {
 
 func (x *AckRequest) Reset() {
 	*x = AckRequest{}
-	mi := &file_mqlite_proto_msgTypes[19]
+	mi := &file_mqlite_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1110,7 +1358,7 @@ func (x *AckRequest) String() string {
 func (*AckRequest) ProtoMessage() {}
 
 func (x *AckRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[19]
+	mi := &file_mqlite_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1123,7 +1371,7 @@ func (x *AckRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AckRequest.ProtoReflect.Descriptor instead.
 func (*AckRequest) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{19}
+	return file_mqlite_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *AckRequest) GetNamespace() string {
@@ -1163,7 +1411,7 @@ type AckResponse struct {
 
 func (x *AckResponse) Reset() {
 	*x = AckResponse{}
-	mi := &file_mqlite_proto_msgTypes[20]
+	mi := &file_mqlite_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1175,7 +1423,7 @@ func (x *AckResponse) String() string {
 func (*AckResponse) ProtoMessage() {}
 
 func (x *AckResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[20]
+	mi := &file_mqlite_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1188,7 +1436,7 @@ func (x *AckResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AckResponse.ProtoReflect.Descriptor instead.
 func (*AckResponse) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{20}
+	return file_mqlite_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *AckResponse) GetSuccess() bool {
@@ -1215,6 +1463,8 @@ type TCPCommand struct {
 	//	*TCPCommand_Consume
 	//	*TCPCommand_Subscribe
 	//	*TCPCommand_Ack
+	//	*TCPCommand_ResizeTopic
+	//	*TCPCommand_RebalanceTopic
 	Data          isTCPCommand_Data `protobuf_oneof:"data"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1222,7 +1472,7 @@ type TCPCommand struct {
 
 func (x *TCPCommand) Reset() {
 	*x = TCPCommand{}
-	mi := &file_mqlite_proto_msgTypes[21]
+	mi := &file_mqlite_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1234,7 +1484,7 @@ func (x *TCPCommand) String() string {
 func (*TCPCommand) ProtoMessage() {}
 
 func (x *TCPCommand) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[21]
+	mi := &file_mqlite_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1247,7 +1497,7 @@ func (x *TCPCommand) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TCPCommand.ProtoReflect.Descriptor instead.
 func (*TCPCommand) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{21}
+	return file_mqlite_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *TCPCommand) GetAction() string {
@@ -1354,6 +1604,24 @@ func (x *TCPCommand) GetAck() *AckRequest {
 	return nil
 }
 
+func (x *TCPCommand) GetResizeTopic() *ResizeTopicRequest {
+	if x != nil {
+		if x, ok := x.Data.(*TCPCommand_ResizeTopic); ok {
+			return x.ResizeTopic
+		}
+	}
+	return nil
+}
+
+func (x *TCPCommand) GetRebalanceTopic() *RebalanceTopicRequest {
+	if x != nil {
+		if x, ok := x.Data.(*TCPCommand_RebalanceTopic); ok {
+			return x.RebalanceTopic
+		}
+	}
+	return nil
+}
+
 type isTCPCommand_Data interface {
 	isTCPCommand_Data()
 }
@@ -1398,6 +1666,14 @@ type TCPCommand_Ack struct {
 	Ack *AckRequest `protobuf:"bytes,19,opt,name=ack,proto3,oneof"`
 }
 
+type TCPCommand_ResizeTopic struct {
+	ResizeTopic *ResizeTopicRequest `protobuf:"bytes,20,opt,name=resize_topic,json=resizeTopic,proto3,oneof"`
+}
+
+type TCPCommand_RebalanceTopic struct {
+	RebalanceTopic *RebalanceTopicRequest `protobuf:"bytes,21,opt,name=rebalance_topic,json=rebalanceTopic,proto3,oneof"`
+}
+
 func (*TCPCommand_CreateNamespace) isTCPCommand_Data() {}
 
 func (*TCPCommand_DeleteNamespace) isTCPCommand_Data() {}
@@ -1418,6 +1694,10 @@ func (*TCPCommand_Subscribe) isTCPCommand_Data() {}
 
 func (*TCPCommand_Ack) isTCPCommand_Data() {}
 
+func (*TCPCommand_ResizeTopic) isTCPCommand_Data() {}
+
+func (*TCPCommand_RebalanceTopic) isTCPCommand_Data() {}
+
 // TCPResponse is the envelope for TCP protocol responses when
 // using protobuf encoding (encoding flag = 1).
 type TCPResponse struct {
@@ -1436,6 +1716,8 @@ type TCPResponse struct {
 	//	*TCPResponse_ConsumeResponse
 	//	*TCPResponse_SubscribeMessage
 	//	*TCPResponse_AckResponse
+	//	*TCPResponse_ResizeTopicResponse
+	//	*TCPResponse_RebalanceTopicResponse
 	Data          isTCPResponse_Data `protobuf_oneof:"data"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1443,7 +1725,7 @@ type TCPResponse struct {
 
 func (x *TCPResponse) Reset() {
 	*x = TCPResponse{}
-	mi := &file_mqlite_proto_msgTypes[22]
+	mi := &file_mqlite_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1455,7 +1737,7 @@ func (x *TCPResponse) String() string {
 func (*TCPResponse) ProtoMessage() {}
 
 func (x *TCPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mqlite_proto_msgTypes[22]
+	mi := &file_mqlite_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1468,7 +1750,7 @@ func (x *TCPResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TCPResponse.ProtoReflect.Descriptor instead.
 func (*TCPResponse) Descriptor() ([]byte, []int) {
-	return file_mqlite_proto_rawDescGZIP(), []int{22}
+	return file_mqlite_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *TCPResponse) GetStatus() string {
@@ -1582,6 +1864,24 @@ func (x *TCPResponse) GetAckResponse() *AckResponse {
 	return nil
 }
 
+func (x *TCPResponse) GetResizeTopicResponse() *ResizeTopicResponse {
+	if x != nil {
+		if x, ok := x.Data.(*TCPResponse_ResizeTopicResponse); ok {
+			return x.ResizeTopicResponse
+		}
+	}
+	return nil
+}
+
+func (x *TCPResponse) GetRebalanceTopicResponse() *RebalanceTopicResponse {
+	if x != nil {
+		if x, ok := x.Data.(*TCPResponse_RebalanceTopicResponse); ok {
+			return x.RebalanceTopicResponse
+		}
+	}
+	return nil
+}
+
 type isTCPResponse_Data interface {
 	isTCPResponse_Data()
 }
@@ -1626,6 +1926,14 @@ type TCPResponse_AckResponse struct {
 	AckResponse *AckResponse `protobuf:"bytes,19,opt,name=ack_response,json=ackResponse,proto3,oneof"`
 }
 
+type TCPResponse_ResizeTopicResponse struct {
+	ResizeTopicResponse *ResizeTopicResponse `protobuf:"bytes,20,opt,name=resize_topic_response,json=resizeTopicResponse,proto3,oneof"`
+}
+
+type TCPResponse_RebalanceTopicResponse struct {
+	RebalanceTopicResponse *RebalanceTopicResponse `protobuf:"bytes,21,opt,name=rebalance_topic_response,json=rebalanceTopicResponse,proto3,oneof"`
+}
+
 func (*TCPResponse_CreateNamespaceResponse) isTCPResponse_Data() {}
 
 func (*TCPResponse_DeleteNamespaceResponse) isTCPResponse_Data() {}
@@ -1645,6 +1953,10 @@ func (*TCPResponse_ConsumeResponse) isTCPResponse_Data() {}
 func (*TCPResponse_SubscribeMessage) isTCPResponse_Data() {}
 
 func (*TCPResponse_AckResponse) isTCPResponse_Data() {}
+
+func (*TCPResponse_ResizeTopicResponse) isTCPResponse_Data() {}
+
+func (*TCPResponse_RebalanceTopicResponse) isTCPResponse_Data() {}
 
 var File_mqlite_proto protoreflect.FileDescriptor
 
@@ -1694,11 +2006,28 @@ const file_mqlite_proto_rawDesc = "" +
 	"\x11ListTopicsRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\"B\n" +
 	"\x12ListTopicsResponse\x12,\n" +
-	"\x06topics\x18\x01 \x03(\v2\x14.mqlite.v1.TopicInfoR\x06topics\"@\n" +
+	"\x06topics\x18\x01 \x03(\v2\x14.mqlite.v1.TopicInfoR\x06topics\"Z\n" +
 	"\tTopicInfo\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1f\n" +
 	"\vqueue_count\x18\x02 \x01(\x05R\n" +
-	"queueCount\"\x98\x02\n" +
+	"queueCount\x12\x18\n" +
+	"\aversion\x18\x03 \x01(\x04R\aversion\"n\n" +
+	"\x12ResizeTopicRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12&\n" +
+	"\x0fnew_queue_count\x18\x03 \x01(\x05R\rnewQueueCount\"\xa7\x01\n" +
+	"\x13ResizeTopicResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12&\n" +
+	"\x0fnew_queue_count\x18\x03 \x01(\x05R\rnewQueueCount\x12\x18\n" +
+	"\aversion\x18\x04 \x01(\x04R\aversion\x12\x1a\n" +
+	"\bdraining\x18\x05 \x01(\bR\bdraining\"I\n" +
+	"\x15RebalanceTopicRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"L\n" +
+	"\x16RebalanceTopicResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\x98\x02\n" +
 	"\x0ePublishRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x14\n" +
 	"\x05topic\x18\x02 \x01(\tR\x05topic\x12\x18\n" +
@@ -1736,7 +2065,7 @@ const file_mqlite_proto_rawDesc = "" +
 	"\vmessage_ids\x18\x04 \x03(\tR\n" +
 	"messageIds\"'\n" +
 	"\vAckResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xb8\x05\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xc9\x06\n" +
 	"\n" +
 	"TCPCommand\x12\x16\n" +
 	"\x06action\x18\x01 \x01(\tR\x06action\x12N\n" +
@@ -1751,8 +2080,10 @@ const file_mqlite_proto_rawDesc = "" +
 	"\apublish\x18\x10 \x01(\v2\x19.mqlite.v1.PublishRequestH\x00R\apublish\x125\n" +
 	"\aconsume\x18\x11 \x01(\v2\x19.mqlite.v1.ConsumeRequestH\x00R\aconsume\x12;\n" +
 	"\tsubscribe\x18\x12 \x01(\v2\x1b.mqlite.v1.SubscribeRequestH\x00R\tsubscribe\x12)\n" +
-	"\x03ack\x18\x13 \x01(\v2\x15.mqlite.v1.AckRequestH\x00R\x03ackB\x06\n" +
-	"\x04data\"\xf7\x06\n" +
+	"\x03ack\x18\x13 \x01(\v2\x15.mqlite.v1.AckRequestH\x00R\x03ack\x12B\n" +
+	"\fresize_topic\x18\x14 \x01(\v2\x1d.mqlite.v1.ResizeTopicRequestH\x00R\vresizeTopic\x12K\n" +
+	"\x0frebalance_topic\x18\x15 \x01(\v2 .mqlite.v1.RebalanceTopicRequestH\x00R\x0erebalanceTopicB\x06\n" +
+	"\x04data\"\xac\b\n" +
 	"\vTCPResponse\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\tR\x06status\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error\x12`\n" +
@@ -1766,8 +2097,10 @@ const file_mqlite_proto_rawDesc = "" +
 	"\x10publish_response\x18\x10 \x01(\v2\x1a.mqlite.v1.PublishResponseH\x00R\x0fpublishResponse\x12G\n" +
 	"\x10consume_response\x18\x11 \x01(\v2\x1a.mqlite.v1.ConsumeResponseH\x00R\x0fconsumeResponse\x12A\n" +
 	"\x11subscribe_message\x18\x12 \x01(\v2\x12.mqlite.v1.MessageH\x00R\x10subscribeMessage\x12;\n" +
-	"\fack_response\x18\x13 \x01(\v2\x16.mqlite.v1.AckResponseH\x00R\vackResponseB\x06\n" +
-	"\x04data2\xfb\x05\n" +
+	"\fack_response\x18\x13 \x01(\v2\x16.mqlite.v1.AckResponseH\x00R\vackResponse\x12T\n" +
+	"\x15resize_topic_response\x18\x14 \x01(\v2\x1e.mqlite.v1.ResizeTopicResponseH\x00R\x13resizeTopicResponse\x12]\n" +
+	"\x18rebalance_topic_response\x18\x15 \x01(\v2!.mqlite.v1.RebalanceTopicResponseH\x00R\x16rebalanceTopicResponseB\x06\n" +
+	"\x04data2\xa0\a\n" +
 	"\rMQLiteService\x12X\n" +
 	"\x0fCreateNamespace\x12!.mqlite.v1.CreateNamespaceRequest\x1a\".mqlite.v1.CreateNamespaceResponse\x12X\n" +
 	"\x0fDeleteNamespace\x12!.mqlite.v1.DeleteNamespaceRequest\x1a\".mqlite.v1.DeleteNamespaceResponse\x12U\n" +
@@ -1775,7 +2108,9 @@ const file_mqlite_proto_rawDesc = "" +
 	"\vCreateTopic\x12\x1d.mqlite.v1.CreateTopicRequest\x1a\x1e.mqlite.v1.CreateTopicResponse\x12L\n" +
 	"\vDeleteTopic\x12\x1d.mqlite.v1.DeleteTopicRequest\x1a\x1e.mqlite.v1.DeleteTopicResponse\x12I\n" +
 	"\n" +
-	"ListTopics\x12\x1c.mqlite.v1.ListTopicsRequest\x1a\x1d.mqlite.v1.ListTopicsResponse\x12@\n" +
+	"ListTopics\x12\x1c.mqlite.v1.ListTopicsRequest\x1a\x1d.mqlite.v1.ListTopicsResponse\x12L\n" +
+	"\vResizeTopic\x12\x1d.mqlite.v1.ResizeTopicRequest\x1a\x1e.mqlite.v1.ResizeTopicResponse\x12U\n" +
+	"\x0eRebalanceTopic\x12 .mqlite.v1.RebalanceTopicRequest\x1a!.mqlite.v1.RebalanceTopicResponse\x12@\n" +
 	"\aPublish\x12\x19.mqlite.v1.PublishRequest\x1a\x1a.mqlite.v1.PublishResponse\x12@\n" +
 	"\aConsume\x12\x19.mqlite.v1.ConsumeRequest\x1a\x1a.mqlite.v1.ConsumeResponse\x12>\n" +
 	"\tSubscribe\x12\x1b.mqlite.v1.SubscribeRequest\x1a\x12.mqlite.v1.Message0\x01\x124\n" +
@@ -1793,7 +2128,7 @@ func file_mqlite_proto_rawDescGZIP() []byte {
 	return file_mqlite_proto_rawDescData
 }
 
-var file_mqlite_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_mqlite_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
 var file_mqlite_proto_goTypes = []any{
 	(*Message)(nil),                 // 0: mqlite.v1.Message
 	(*CreateNamespaceRequest)(nil),  // 1: mqlite.v1.CreateNamespaceRequest
@@ -1809,22 +2144,26 @@ var file_mqlite_proto_goTypes = []any{
 	(*ListTopicsRequest)(nil),       // 11: mqlite.v1.ListTopicsRequest
 	(*ListTopicsResponse)(nil),      // 12: mqlite.v1.ListTopicsResponse
 	(*TopicInfo)(nil),               // 13: mqlite.v1.TopicInfo
-	(*PublishRequest)(nil),          // 14: mqlite.v1.PublishRequest
-	(*PublishResponse)(nil),         // 15: mqlite.v1.PublishResponse
-	(*ConsumeRequest)(nil),          // 16: mqlite.v1.ConsumeRequest
-	(*ConsumeResponse)(nil),         // 17: mqlite.v1.ConsumeResponse
-	(*SubscribeRequest)(nil),        // 18: mqlite.v1.SubscribeRequest
-	(*AckRequest)(nil),              // 19: mqlite.v1.AckRequest
-	(*AckResponse)(nil),             // 20: mqlite.v1.AckResponse
-	(*TCPCommand)(nil),              // 21: mqlite.v1.TCPCommand
-	(*TCPResponse)(nil),             // 22: mqlite.v1.TCPResponse
-	nil,                             // 23: mqlite.v1.Message.HeadersEntry
-	nil,                             // 24: mqlite.v1.PublishRequest.HeadersEntry
+	(*ResizeTopicRequest)(nil),      // 14: mqlite.v1.ResizeTopicRequest
+	(*ResizeTopicResponse)(nil),     // 15: mqlite.v1.ResizeTopicResponse
+	(*RebalanceTopicRequest)(nil),   // 16: mqlite.v1.RebalanceTopicRequest
+	(*RebalanceTopicResponse)(nil),  // 17: mqlite.v1.RebalanceTopicResponse
+	(*PublishRequest)(nil),          // 18: mqlite.v1.PublishRequest
+	(*PublishResponse)(nil),         // 19: mqlite.v1.PublishResponse
+	(*ConsumeRequest)(nil),          // 20: mqlite.v1.ConsumeRequest
+	(*ConsumeResponse)(nil),         // 21: mqlite.v1.ConsumeResponse
+	(*SubscribeRequest)(nil),        // 22: mqlite.v1.SubscribeRequest
+	(*AckRequest)(nil),              // 23: mqlite.v1.AckRequest
+	(*AckResponse)(nil),             // 24: mqlite.v1.AckResponse
+	(*TCPCommand)(nil),              // 25: mqlite.v1.TCPCommand
+	(*TCPResponse)(nil),             // 26: mqlite.v1.TCPResponse
+	nil,                             // 27: mqlite.v1.Message.HeadersEntry
+	nil,                             // 28: mqlite.v1.PublishRequest.HeadersEntry
 }
 var file_mqlite_proto_depIdxs = []int32{
-	23, // 0: mqlite.v1.Message.headers:type_name -> mqlite.v1.Message.HeadersEntry
+	27, // 0: mqlite.v1.Message.headers:type_name -> mqlite.v1.Message.HeadersEntry
 	13, // 1: mqlite.v1.ListTopicsResponse.topics:type_name -> mqlite.v1.TopicInfo
-	24, // 2: mqlite.v1.PublishRequest.headers:type_name -> mqlite.v1.PublishRequest.HeadersEntry
+	28, // 2: mqlite.v1.PublishRequest.headers:type_name -> mqlite.v1.PublishRequest.HeadersEntry
 	0,  // 3: mqlite.v1.ConsumeResponse.messages:type_name -> mqlite.v1.Message
 	1,  // 4: mqlite.v1.TCPCommand.create_namespace:type_name -> mqlite.v1.CreateNamespaceRequest
 	3,  // 5: mqlite.v1.TCPCommand.delete_namespace:type_name -> mqlite.v1.DeleteNamespaceRequest
@@ -1832,45 +2171,53 @@ var file_mqlite_proto_depIdxs = []int32{
 	7,  // 7: mqlite.v1.TCPCommand.create_topic:type_name -> mqlite.v1.CreateTopicRequest
 	9,  // 8: mqlite.v1.TCPCommand.delete_topic:type_name -> mqlite.v1.DeleteTopicRequest
 	11, // 9: mqlite.v1.TCPCommand.list_topics:type_name -> mqlite.v1.ListTopicsRequest
-	14, // 10: mqlite.v1.TCPCommand.publish:type_name -> mqlite.v1.PublishRequest
-	16, // 11: mqlite.v1.TCPCommand.consume:type_name -> mqlite.v1.ConsumeRequest
-	18, // 12: mqlite.v1.TCPCommand.subscribe:type_name -> mqlite.v1.SubscribeRequest
-	19, // 13: mqlite.v1.TCPCommand.ack:type_name -> mqlite.v1.AckRequest
-	2,  // 14: mqlite.v1.TCPResponse.create_namespace_response:type_name -> mqlite.v1.CreateNamespaceResponse
-	4,  // 15: mqlite.v1.TCPResponse.delete_namespace_response:type_name -> mqlite.v1.DeleteNamespaceResponse
-	6,  // 16: mqlite.v1.TCPResponse.list_namespaces_response:type_name -> mqlite.v1.ListNamespacesResponse
-	8,  // 17: mqlite.v1.TCPResponse.create_topic_response:type_name -> mqlite.v1.CreateTopicResponse
-	10, // 18: mqlite.v1.TCPResponse.delete_topic_response:type_name -> mqlite.v1.DeleteTopicResponse
-	12, // 19: mqlite.v1.TCPResponse.list_topics_response:type_name -> mqlite.v1.ListTopicsResponse
-	15, // 20: mqlite.v1.TCPResponse.publish_response:type_name -> mqlite.v1.PublishResponse
-	17, // 21: mqlite.v1.TCPResponse.consume_response:type_name -> mqlite.v1.ConsumeResponse
-	0,  // 22: mqlite.v1.TCPResponse.subscribe_message:type_name -> mqlite.v1.Message
-	20, // 23: mqlite.v1.TCPResponse.ack_response:type_name -> mqlite.v1.AckResponse
-	1,  // 24: mqlite.v1.MQLiteService.CreateNamespace:input_type -> mqlite.v1.CreateNamespaceRequest
-	3,  // 25: mqlite.v1.MQLiteService.DeleteNamespace:input_type -> mqlite.v1.DeleteNamespaceRequest
-	5,  // 26: mqlite.v1.MQLiteService.ListNamespaces:input_type -> mqlite.v1.ListNamespacesRequest
-	7,  // 27: mqlite.v1.MQLiteService.CreateTopic:input_type -> mqlite.v1.CreateTopicRequest
-	9,  // 28: mqlite.v1.MQLiteService.DeleteTopic:input_type -> mqlite.v1.DeleteTopicRequest
-	11, // 29: mqlite.v1.MQLiteService.ListTopics:input_type -> mqlite.v1.ListTopicsRequest
-	14, // 30: mqlite.v1.MQLiteService.Publish:input_type -> mqlite.v1.PublishRequest
-	16, // 31: mqlite.v1.MQLiteService.Consume:input_type -> mqlite.v1.ConsumeRequest
-	18, // 32: mqlite.v1.MQLiteService.Subscribe:input_type -> mqlite.v1.SubscribeRequest
-	19, // 33: mqlite.v1.MQLiteService.Ack:input_type -> mqlite.v1.AckRequest
-	2,  // 34: mqlite.v1.MQLiteService.CreateNamespace:output_type -> mqlite.v1.CreateNamespaceResponse
-	4,  // 35: mqlite.v1.MQLiteService.DeleteNamespace:output_type -> mqlite.v1.DeleteNamespaceResponse
-	6,  // 36: mqlite.v1.MQLiteService.ListNamespaces:output_type -> mqlite.v1.ListNamespacesResponse
-	8,  // 37: mqlite.v1.MQLiteService.CreateTopic:output_type -> mqlite.v1.CreateTopicResponse
-	10, // 38: mqlite.v1.MQLiteService.DeleteTopic:output_type -> mqlite.v1.DeleteTopicResponse
-	12, // 39: mqlite.v1.MQLiteService.ListTopics:output_type -> mqlite.v1.ListTopicsResponse
-	15, // 40: mqlite.v1.MQLiteService.Publish:output_type -> mqlite.v1.PublishResponse
-	17, // 41: mqlite.v1.MQLiteService.Consume:output_type -> mqlite.v1.ConsumeResponse
-	0,  // 42: mqlite.v1.MQLiteService.Subscribe:output_type -> mqlite.v1.Message
-	20, // 43: mqlite.v1.MQLiteService.Ack:output_type -> mqlite.v1.AckResponse
-	34, // [34:44] is the sub-list for method output_type
-	24, // [24:34] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	18, // 10: mqlite.v1.TCPCommand.publish:type_name -> mqlite.v1.PublishRequest
+	20, // 11: mqlite.v1.TCPCommand.consume:type_name -> mqlite.v1.ConsumeRequest
+	22, // 12: mqlite.v1.TCPCommand.subscribe:type_name -> mqlite.v1.SubscribeRequest
+	23, // 13: mqlite.v1.TCPCommand.ack:type_name -> mqlite.v1.AckRequest
+	14, // 14: mqlite.v1.TCPCommand.resize_topic:type_name -> mqlite.v1.ResizeTopicRequest
+	16, // 15: mqlite.v1.TCPCommand.rebalance_topic:type_name -> mqlite.v1.RebalanceTopicRequest
+	2,  // 16: mqlite.v1.TCPResponse.create_namespace_response:type_name -> mqlite.v1.CreateNamespaceResponse
+	4,  // 17: mqlite.v1.TCPResponse.delete_namespace_response:type_name -> mqlite.v1.DeleteNamespaceResponse
+	6,  // 18: mqlite.v1.TCPResponse.list_namespaces_response:type_name -> mqlite.v1.ListNamespacesResponse
+	8,  // 19: mqlite.v1.TCPResponse.create_topic_response:type_name -> mqlite.v1.CreateTopicResponse
+	10, // 20: mqlite.v1.TCPResponse.delete_topic_response:type_name -> mqlite.v1.DeleteTopicResponse
+	12, // 21: mqlite.v1.TCPResponse.list_topics_response:type_name -> mqlite.v1.ListTopicsResponse
+	19, // 22: mqlite.v1.TCPResponse.publish_response:type_name -> mqlite.v1.PublishResponse
+	21, // 23: mqlite.v1.TCPResponse.consume_response:type_name -> mqlite.v1.ConsumeResponse
+	0,  // 24: mqlite.v1.TCPResponse.subscribe_message:type_name -> mqlite.v1.Message
+	24, // 25: mqlite.v1.TCPResponse.ack_response:type_name -> mqlite.v1.AckResponse
+	15, // 26: mqlite.v1.TCPResponse.resize_topic_response:type_name -> mqlite.v1.ResizeTopicResponse
+	17, // 27: mqlite.v1.TCPResponse.rebalance_topic_response:type_name -> mqlite.v1.RebalanceTopicResponse
+	1,  // 28: mqlite.v1.MQLiteService.CreateNamespace:input_type -> mqlite.v1.CreateNamespaceRequest
+	3,  // 29: mqlite.v1.MQLiteService.DeleteNamespace:input_type -> mqlite.v1.DeleteNamespaceRequest
+	5,  // 30: mqlite.v1.MQLiteService.ListNamespaces:input_type -> mqlite.v1.ListNamespacesRequest
+	7,  // 31: mqlite.v1.MQLiteService.CreateTopic:input_type -> mqlite.v1.CreateTopicRequest
+	9,  // 32: mqlite.v1.MQLiteService.DeleteTopic:input_type -> mqlite.v1.DeleteTopicRequest
+	11, // 33: mqlite.v1.MQLiteService.ListTopics:input_type -> mqlite.v1.ListTopicsRequest
+	14, // 34: mqlite.v1.MQLiteService.ResizeTopic:input_type -> mqlite.v1.ResizeTopicRequest
+	16, // 35: mqlite.v1.MQLiteService.RebalanceTopic:input_type -> mqlite.v1.RebalanceTopicRequest
+	18, // 36: mqlite.v1.MQLiteService.Publish:input_type -> mqlite.v1.PublishRequest
+	20, // 37: mqlite.v1.MQLiteService.Consume:input_type -> mqlite.v1.ConsumeRequest
+	22, // 38: mqlite.v1.MQLiteService.Subscribe:input_type -> mqlite.v1.SubscribeRequest
+	23, // 39: mqlite.v1.MQLiteService.Ack:input_type -> mqlite.v1.AckRequest
+	2,  // 40: mqlite.v1.MQLiteService.CreateNamespace:output_type -> mqlite.v1.CreateNamespaceResponse
+	4,  // 41: mqlite.v1.MQLiteService.DeleteNamespace:output_type -> mqlite.v1.DeleteNamespaceResponse
+	6,  // 42: mqlite.v1.MQLiteService.ListNamespaces:output_type -> mqlite.v1.ListNamespacesResponse
+	8,  // 43: mqlite.v1.MQLiteService.CreateTopic:output_type -> mqlite.v1.CreateTopicResponse
+	10, // 44: mqlite.v1.MQLiteService.DeleteTopic:output_type -> mqlite.v1.DeleteTopicResponse
+	12, // 45: mqlite.v1.MQLiteService.ListTopics:output_type -> mqlite.v1.ListTopicsResponse
+	15, // 46: mqlite.v1.MQLiteService.ResizeTopic:output_type -> mqlite.v1.ResizeTopicResponse
+	17, // 47: mqlite.v1.MQLiteService.RebalanceTopic:output_type -> mqlite.v1.RebalanceTopicResponse
+	19, // 48: mqlite.v1.MQLiteService.Publish:output_type -> mqlite.v1.PublishResponse
+	21, // 49: mqlite.v1.MQLiteService.Consume:output_type -> mqlite.v1.ConsumeResponse
+	0,  // 50: mqlite.v1.MQLiteService.Subscribe:output_type -> mqlite.v1.Message
+	24, // 51: mqlite.v1.MQLiteService.Ack:output_type -> mqlite.v1.AckResponse
+	40, // [40:52] is the sub-list for method output_type
+	28, // [28:40] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_mqlite_proto_init() }
@@ -1878,7 +2225,7 @@ func file_mqlite_proto_init() {
 	if File_mqlite_proto != nil {
 		return
 	}
-	file_mqlite_proto_msgTypes[21].OneofWrappers = []any{
+	file_mqlite_proto_msgTypes[25].OneofWrappers = []any{
 		(*TCPCommand_CreateNamespace)(nil),
 		(*TCPCommand_DeleteNamespace)(nil),
 		(*TCPCommand_ListNamespaces)(nil),
@@ -1889,8 +2236,10 @@ func file_mqlite_proto_init() {
 		(*TCPCommand_Consume)(nil),
 		(*TCPCommand_Subscribe)(nil),
 		(*TCPCommand_Ack)(nil),
+		(*TCPCommand_ResizeTopic)(nil),
+		(*TCPCommand_RebalanceTopic)(nil),
 	}
-	file_mqlite_proto_msgTypes[22].OneofWrappers = []any{
+	file_mqlite_proto_msgTypes[26].OneofWrappers = []any{
 		(*TCPResponse_CreateNamespaceResponse)(nil),
 		(*TCPResponse_DeleteNamespaceResponse)(nil),
 		(*TCPResponse_ListNamespacesResponse)(nil),
@@ -1901,6 +2250,8 @@ func file_mqlite_proto_init() {
 		(*TCPResponse_ConsumeResponse)(nil),
 		(*TCPResponse_SubscribeMessage)(nil),
 		(*TCPResponse_AckResponse)(nil),
+		(*TCPResponse_ResizeTopicResponse)(nil),
+		(*TCPResponse_RebalanceTopicResponse)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1908,7 +2259,7 @@ func file_mqlite_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mqlite_proto_rawDesc), len(file_mqlite_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   25,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

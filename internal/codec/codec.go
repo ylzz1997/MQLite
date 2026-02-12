@@ -85,6 +85,7 @@ func TopicInfosToProto(infos []model.TopicInfo) []*pb.TopicInfo {
 		result[i] = &pb.TopicInfo{
 			Name:       info.Name,
 			QueueCount: int32(info.QueueCount),
+			Version:    info.Version,
 		}
 	}
 	return result
