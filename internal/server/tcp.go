@@ -11,8 +11,11 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
+	pb "mqlite/api/proto/gen"
 	"mqlite/internal/broker"
+	"mqlite/internal/codec"
 	"mqlite/internal/model"
 )
 
@@ -181,7 +184,7 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 		}
 
 		// Read frame
-		cmd, encoding, err := readFrame(reader)
+		payload, encoding, err := readFrame(reader)
 		if err != nil {
 			if err != io.EOF {
 				s.logger.Debug("TCP read error", zap.Error(err))
@@ -189,30 +192,51 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 			return
 		}
 
-		if encoding != EncodingJSON {
-			// For now, only JSON is supported for TCP commands
+		switch encoding {
+		case EncodingJSON:
+			s.handleJSONFrame(conn, payload, encoding, writer)
+		case EncodingProtobuf:
+			s.handleProtobufFrame(conn, payload, encoding, writer)
+		default:
 			s.writeResponse(writer, encoding, &TCPResponse{
 				Status: "error",
-				Error:  "only JSON encoding is supported for TCP",
+				Error:  fmt.Sprintf("unsupported encoding: %d", encoding),
 			})
-			continue
 		}
+	}
+}
 
-		// Parse command
-		var tcpCmd TCPCommand
-		if err := json.Unmarshal(cmd, &tcpCmd); err != nil {
-			s.writeResponse(writer, encoding, &TCPResponse{
-				Status: "error",
-				Error:  "invalid command: " + err.Error(),
-			})
-			continue
-		}
+// handleJSONFrame processes a JSON-encoded command frame.
+func (s *TCPServer) handleJSONFrame(conn net.Conn, payload []byte, encoding byte, writer *bufio.Writer) {
+	var tcpCmd TCPCommand
+	if err := json.Unmarshal(payload, &tcpCmd); err != nil {
+		s.writeResponse(writer, encoding, &TCPResponse{
+			Status: "error",
+			Error:  "invalid command: " + err.Error(),
+		})
+		return
+	}
 
-		// Handle command
-		resp := s.handleCommand(conn, tcpCmd, encoding, writer)
-		if resp != nil {
-			s.writeResponse(writer, encoding, resp)
-		}
+	resp := s.handleCommand(conn, tcpCmd, encoding, writer)
+	if resp != nil {
+		s.writeResponse(writer, encoding, resp)
+	}
+}
+
+// handleProtobufFrame processes a Protobuf-encoded command frame.
+func (s *TCPServer) handleProtobufFrame(conn net.Conn, payload []byte, encoding byte, writer *bufio.Writer) {
+	var tcpCmd pb.TCPCommand
+	if err := proto.Unmarshal(payload, &tcpCmd); err != nil {
+		s.writeProtoResponse(writer, &pb.TCPResponse{
+			Status: "error",
+			Error:  "invalid protobuf command: " + err.Error(),
+		})
+		return
+	}
+
+	resp := s.handleProtoCommand(conn, &tcpCmd, writer)
+	if resp != nil {
+		s.writeProtoResponse(writer, resp)
 	}
 }
 
@@ -341,6 +365,192 @@ func (s *TCPServer) handleCommand(conn net.Conn, cmd TCPCommand, encoding byte, 
 	}
 }
 
+// ==========================================================
+// Protobuf command handling
+// ==========================================================
+
+func (s *TCPServer) handleProtoCommand(conn net.Conn, cmd *pb.TCPCommand, writer *bufio.Writer) *pb.TCPResponse {
+	ctx := s.ctx
+
+	switch cmd.Action {
+	case "create_namespace":
+		data := cmd.GetCreateNamespace()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing create_namespace data"}
+		}
+		if err := s.broker.CreateNamespace(ctx, data.Name); err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_CreateNamespaceResponse{CreateNamespaceResponse: &pb.CreateNamespaceResponse{Success: true, Message: "namespace created"}},
+		}
+
+	case "delete_namespace":
+		data := cmd.GetDeleteNamespace()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing delete_namespace data"}
+		}
+		if err := s.broker.DeleteNamespace(ctx, data.Name); err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_DeleteNamespaceResponse{DeleteNamespaceResponse: &pb.DeleteNamespaceResponse{Success: true, Message: "namespace deleted"}},
+		}
+
+	case "list_namespaces":
+		names := s.broker.ListNamespaces(ctx)
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_ListNamespacesResponse{ListNamespacesResponse: &pb.ListNamespacesResponse{Namespaces: names}},
+		}
+
+	case "create_topic":
+		data := cmd.GetCreateTopic()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing create_topic data"}
+		}
+		if err := s.broker.CreateTopic(ctx, data.Namespace, data.Name, int(data.QueueCount)); err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_CreateTopicResponse{CreateTopicResponse: &pb.CreateTopicResponse{Success: true, Message: "topic created"}},
+		}
+
+	case "delete_topic":
+		data := cmd.GetDeleteTopic()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing delete_topic data"}
+		}
+		if err := s.broker.DeleteTopic(ctx, data.Namespace, data.Name); err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_DeleteTopicResponse{DeleteTopicResponse: &pb.DeleteTopicResponse{Success: true, Message: "topic deleted"}},
+		}
+
+	case "list_topics":
+		data := cmd.GetListTopics()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing list_topics data"}
+		}
+		infos, err := s.broker.ListTopics(ctx, data.Namespace)
+		if err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_ListTopicsResponse{ListTopicsResponse: &pb.ListTopicsResponse{Topics: codec.TopicInfosToProto(infos)}},
+		}
+
+	case "publish":
+		data := cmd.GetPublish()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing publish data"}
+		}
+		queueID := int(data.QueueId)
+		resp, err := s.broker.Publish(ctx, &broker.PublishRequest{
+			Namespace:  data.Namespace,
+			Topic:      data.Topic,
+			Payload:    data.Payload,
+			Headers:    data.Headers,
+			RoutingKey: data.RoutingKey,
+			QueueID:    queueID,
+		})
+		if err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_PublishResponse{PublishResponse: &pb.PublishResponse{MessageId: resp.MessageID, QueueId: int32(resp.QueueID)}},
+		}
+
+	case "consume":
+		data := cmd.GetConsume()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing consume data"}
+		}
+		msgs, err := s.broker.Consume(ctx, &broker.ConsumeRequest{
+			Namespace: data.Namespace,
+			Topic:     data.Topic,
+			QueueID:   int(data.QueueId),
+			BatchSize: int(data.BatchSize),
+			AutoAck:   data.AutoAck,
+		})
+		if err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_ConsumeResponse{ConsumeResponse: &pb.ConsumeResponse{Messages: codec.MessagesToProto(msgs)}},
+		}
+
+	case "subscribe":
+		data := cmd.GetSubscribe()
+		if data == nil {
+			s.writeProtoResponse(writer, &pb.TCPResponse{Status: "error", Error: "missing subscribe data"})
+			return nil
+		}
+		s.handleProtoSubscribe(conn, data, writer)
+		return nil // response handled inside
+
+	case "ack":
+		data := cmd.GetAck()
+		if data == nil {
+			return &pb.TCPResponse{Status: "error", Error: "missing ack data"}
+		}
+		if err := s.broker.Ack(ctx, data.Namespace, data.Topic, int(data.QueueId), data.MessageIds); err != nil {
+			return &pb.TCPResponse{Status: "error", Error: err.Error()}
+		}
+		return &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_AckResponse{AckResponse: &pb.AckResponse{Success: true}},
+		}
+
+	default:
+		return &pb.TCPResponse{Status: "error", Error: fmt.Sprintf("unknown action: %s", cmd.Action)}
+	}
+}
+
+func (s *TCPServer) handleProtoSubscribe(conn net.Conn, data *pb.SubscribeRequest, writer *bufio.Writer) {
+	msgCh := make(chan *model.Message, 64)
+	ctx, cancel := context.WithCancel(s.ctx)
+	defer cancel()
+
+	err := s.broker.Subscribe(ctx, &broker.SubscribeRequest{
+		Namespace: data.Namespace,
+		Topic:     data.Topic,
+		QueueID:   int(data.QueueId),
+		AutoAck:   data.AutoAck,
+	}, msgCh)
+	if err != nil {
+		s.writeProtoResponse(writer, &pb.TCPResponse{Status: "error", Error: err.Error()})
+		return
+	}
+
+	// Send initial OK
+	s.writeProtoResponse(writer, &pb.TCPResponse{Status: "ok"})
+
+	// Push messages to client
+	for msg := range msgCh {
+		resp := &pb.TCPResponse{
+			Status: "ok",
+			Data:   &pb.TCPResponse_SubscribeMessage{SubscribeMessage: codec.MessageToProto(msg)},
+		}
+		if err := s.writeProtoResponse(writer, resp); err != nil {
+			s.logger.Debug("TCP protobuf subscribe write error", zap.Error(err))
+			return
+		}
+	}
+}
+
+// ==========================================================
+// JSON subscribe handling
+// ==========================================================
+
 func (s *TCPServer) handleSubscribe(conn net.Conn, data tcpSubscribeData, encoding byte, writer *bufio.Writer) {
 	msgCh := make(chan *model.Message, 64)
 	ctx, cancel := context.WithCancel(s.ctx)
@@ -412,8 +622,19 @@ func (s *TCPServer) writeResponse(writer *bufio.Writer, encoding byte, resp *TCP
 	if err != nil {
 		return err
 	}
+	return writeFrame(writer, EncodingJSON, data)
+}
 
-	// Frame: [4B length][1B encoding][payload]
+func (s *TCPServer) writeProtoResponse(writer *bufio.Writer, resp *pb.TCPResponse) error {
+	data, err := proto.Marshal(resp)
+	if err != nil {
+		return err
+	}
+	return writeFrame(writer, EncodingProtobuf, data)
+}
+
+// writeFrame writes a framed payload: [4B length][1B encoding][payload]
+func writeFrame(writer *bufio.Writer, encoding byte, data []byte) error {
 	totalLen := uint32(1 + len(data))
 	if err := binary.Write(writer, binary.BigEndian, totalLen); err != nil {
 		return err

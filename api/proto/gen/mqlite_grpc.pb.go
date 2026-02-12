@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v3.20.3
-// source: api/proto/mqlite.proto
+// source: mqlite.proto
 
 package mqlitepb
 
@@ -483,5 +483,5 @@ var MQLiteService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "api/proto/mqlite.proto",
+	Metadata: "mqlite.proto",
 }

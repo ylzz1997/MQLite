@@ -153,3 +153,44 @@ message AckRequest {
 message AckResponse {
   bool success = 1;
 }
+
+// ============================================================
+// TCP Framing Protocol (Protobuf encoding)
+// ============================================================
+
+// TCPCommand is the envelope for TCP protocol requests when
+// using protobuf encoding (encoding flag = 1).
+message TCPCommand {
+  string action = 1;
+  oneof data {
+    CreateNamespaceRequest  create_namespace  = 10;
+    DeleteNamespaceRequest  delete_namespace  = 11;
+    ListNamespacesRequest   list_namespaces   = 12;
+    CreateTopicRequest      create_topic      = 13;
+    DeleteTopicRequest      delete_topic      = 14;
+    ListTopicsRequest       list_topics       = 15;
+    PublishRequest          publish           = 16;
+    ConsumeRequest          consume           = 17;
+    SubscribeRequest        subscribe         = 18;
+    AckRequest              ack               = 19;
+  }
+}
+
+// TCPResponse is the envelope for TCP protocol responses when
+// using protobuf encoding (encoding flag = 1).
+message TCPResponse {
+  string status = 1;   // "ok" or "error"
+  string error  = 2;   // populated on error
+  oneof data {
+    CreateNamespaceResponse  create_namespace_response  = 10;
+    DeleteNamespaceResponse  delete_namespace_response  = 11;
+    ListNamespacesResponse   list_namespaces_response   = 12;
+    CreateTopicResponse      create_topic_response      = 13;
+    DeleteTopicResponse      delete_topic_response      = 14;
+    ListTopicsResponse       list_topics_response       = 15;
+    PublishResponse          publish_response            = 16;
+    ConsumeResponse          consume_response            = 17;
+    Message                  subscribe_message           = 18;
+    AckResponse              ack_response                = 19;
+  }
+}

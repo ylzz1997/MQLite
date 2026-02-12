@@ -17,7 +17,9 @@
 ### 编译
 
 ```bash
-go build -o mqlite ./cmd/mqlite
+mkdir bin
+go build -o ./bin/mqlite ./cmd/mqlite
+go build -o ./bin/mqlite_cli ./cmd/mqlite-cli
 ```
 
 ### 运行

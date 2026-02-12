@@ -18,6 +18,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/proto"
 
 	pb "mqlite/api/proto/gen"
 )
@@ -293,6 +294,224 @@ func (c *TCPClient) Close() {
 }
 
 // ================================================================
+// Protobuf TCP Client
+// ================================================================
+
+type ProtoTCPClient struct {
+	conn   net.Conn
+	reader *bufio.Reader
+	writer *bufio.Writer
+}
+
+func NewProtoTCPClient(addr string) (*ProtoTCPClient, error) {
+	conn, err := net.DialTimeout("tcp", addr, 5*time.Second)
+	if err != nil {
+		return nil, err
+	}
+	return &ProtoTCPClient{
+		conn:   conn,
+		reader: bufio.NewReaderSize(conn, 64*1024),
+		writer: bufio.NewWriterSize(conn, 64*1024),
+	}, nil
+}
+
+func (c *ProtoTCPClient) sendCommand(cmd *pb.TCPCommand) (*pb.TCPResponse, error) {
+	payload, err := proto.Marshal(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("marshal command: %w", err)
+	}
+
+	// Write frame: [4B length][1B encoding=1 (Protobuf)][payload]
+	totalLen := uint32(1 + len(payload))
+	if err := binary.Write(c.writer, binary.BigEndian, totalLen); err != nil {
+		return nil, err
+	}
+	if err := c.writer.WriteByte(1); err != nil { // Protobuf encoding
+		return nil, err
+	}
+	if _, err := c.writer.Write(payload); err != nil {
+		return nil, err
+	}
+	if err := c.writer.Flush(); err != nil {
+		return nil, err
+	}
+
+	// Read response frame
+	var respLen uint32
+	if err := binary.Read(c.reader, binary.BigEndian, &respLen); err != nil {
+		return nil, err
+	}
+	if respLen < 1 {
+		return nil, fmt.Errorf("invalid response frame")
+	}
+	// Read encoding byte
+	enc, err := c.reader.ReadByte()
+	if err != nil {
+		return nil, err
+	}
+	respData := make([]byte, respLen-1)
+	if _, err := io.ReadFull(c.reader, respData); err != nil {
+		return nil, err
+	}
+
+	if enc != 1 {
+		return nil, fmt.Errorf("expected protobuf response (encoding=1), got encoding=%d", enc)
+	}
+
+	var resp pb.TCPResponse
+	if err := proto.Unmarshal(respData, &resp); err != nil {
+		return nil, fmt.Errorf("unmarshal response: %w", err)
+	}
+	return &resp, nil
+}
+
+func (c *ProtoTCPClient) CreateNamespace(name string) error {
+	resp, err := c.sendCommand(&pb.TCPCommand{
+		Action: "create_namespace",
+		Data:   &pb.TCPCommand_CreateNamespace{CreateNamespace: &pb.CreateNamespaceRequest{Name: name}},
+	})
+	if err != nil {
+		return err
+	}
+	printProtoResult("CreateNamespace", resp)
+	return nil
+}
+
+func (c *ProtoTCPClient) ListNamespaces() error {
+	resp, err := c.sendCommand(&pb.TCPCommand{
+		Action: "list_namespaces",
+		Data:   &pb.TCPCommand_ListNamespaces{ListNamespaces: &pb.ListNamespacesRequest{}},
+	})
+	if err != nil {
+		return err
+	}
+	printProtoResult("ListNamespaces", resp)
+	return nil
+}
+
+func (c *ProtoTCPClient) CreateTopic(ns, name string, queueCount int) error {
+	resp, err := c.sendCommand(&pb.TCPCommand{
+		Action: "create_topic",
+		Data: &pb.TCPCommand_CreateTopic{CreateTopic: &pb.CreateTopicRequest{
+			Namespace: ns, Name: name, QueueCount: int32(queueCount),
+		}},
+	})
+	if err != nil {
+		return err
+	}
+	printProtoResult("CreateTopic", resp)
+	return nil
+}
+
+func (c *ProtoTCPClient) ListTopics(ns string) error {
+	resp, err := c.sendCommand(&pb.TCPCommand{
+		Action: "list_topics",
+		Data:   &pb.TCPCommand_ListTopics{ListTopics: &pb.ListTopicsRequest{Namespace: ns}},
+	})
+	if err != nil {
+		return err
+	}
+	printProtoResult("ListTopics", resp)
+	return nil
+}
+
+func (c *ProtoTCPClient) Publish(ns, topic string, payload []byte) error {
+	resp, err := c.sendCommand(&pb.TCPCommand{
+		Action: "publish",
+		Data: &pb.TCPCommand_Publish{Publish: &pb.PublishRequest{
+			Namespace: ns, Topic: topic, Payload: payload, QueueId: -1,
+		}},
+	})
+	if err != nil {
+		return err
+	}
+	printProtoResult("Publish", resp)
+	return nil
+}
+
+func (c *ProtoTCPClient) Consume(ns, topic string, queueID, batchSize int, autoAck bool) error {
+	resp, err := c.sendCommand(&pb.TCPCommand{
+		Action: "consume",
+		Data: &pb.TCPCommand_Consume{Consume: &pb.ConsumeRequest{
+			Namespace: ns, Topic: topic, QueueId: int32(queueID),
+			BatchSize: int32(batchSize), AutoAck: autoAck,
+		}},
+	})
+	if err != nil {
+		return err
+	}
+	printProtoResult("Consume", resp)
+	return nil
+}
+
+func (c *ProtoTCPClient) Ack(ns, topic string, queueID int, msgIDs []string) error {
+	resp, err := c.sendCommand(&pb.TCPCommand{
+		Action: "ack",
+		Data: &pb.TCPCommand_Ack{Ack: &pb.AckRequest{
+			Namespace: ns, Topic: topic, QueueId: int32(queueID), MessageIds: msgIDs,
+		}},
+	})
+	if err != nil {
+		return err
+	}
+	printProtoResult("Ack", resp)
+	return nil
+}
+
+func (c *ProtoTCPClient) Close() {
+	c.conn.Close()
+}
+
+// printProtoResult formats and prints a protobuf TCP response.
+func printProtoResult(op string, resp *pb.TCPResponse) {
+	if resp.Status != "ok" {
+		fmt.Printf("  %s error=%s\n", red("[ERR]"), resp.Error)
+		return
+	}
+
+	switch d := resp.Data.(type) {
+	case *pb.TCPResponse_CreateNamespaceResponse:
+		fmt.Printf("  %s success=%v message=%q\n", green("[OK]"), d.CreateNamespaceResponse.Success, d.CreateNamespaceResponse.Message)
+	case *pb.TCPResponse_DeleteNamespaceResponse:
+		fmt.Printf("  %s success=%v message=%q\n", green("[OK]"), d.DeleteNamespaceResponse.Success, d.DeleteNamespaceResponse.Message)
+	case *pb.TCPResponse_ListNamespacesResponse:
+		fmt.Printf("  %s namespaces=%v\n", green("[OK]"), d.ListNamespacesResponse.Namespaces)
+	case *pb.TCPResponse_CreateTopicResponse:
+		fmt.Printf("  %s success=%v message=%q\n", green("[OK]"), d.CreateTopicResponse.Success, d.CreateTopicResponse.Message)
+	case *pb.TCPResponse_DeleteTopicResponse:
+		fmt.Printf("  %s success=%v message=%q\n", green("[OK]"), d.DeleteTopicResponse.Success, d.DeleteTopicResponse.Message)
+	case *pb.TCPResponse_ListTopicsResponse:
+		for _, t := range d.ListTopicsResponse.Topics {
+			fmt.Printf("  %s topic=%q queues=%d\n", green("[OK]"), t.Name, t.QueueCount)
+		}
+	case *pb.TCPResponse_PublishResponse:
+		fmt.Printf("  %s message_id=%s queue_id=%d\n", green("[OK]"), d.PublishResponse.MessageId, d.PublishResponse.QueueId)
+	case *pb.TCPResponse_ConsumeResponse:
+		if len(d.ConsumeResponse.Messages) == 0 {
+			fmt.Printf("  %s no messages\n", yellow("[EMPTY]"))
+		}
+		for _, m := range d.ConsumeResponse.Messages {
+			id := m.Id
+			if len(id) > 8 {
+				id = id[:8] + "..."
+			}
+			fmt.Printf("  %s id=%s queue=%d payload=%s\n", green("[MSG]"), id, m.QueueId, string(m.Payload))
+		}
+	case *pb.TCPResponse_SubscribeMessage:
+		m := d.SubscribeMessage
+		id := m.Id
+		if len(id) > 8 {
+			id = id[:8] + "..."
+		}
+		fmt.Printf("  %s id=%s queue=%d payload=%s\n", green("[MSG]"), id, m.QueueId, string(m.Payload))
+	case *pb.TCPResponse_AckResponse:
+		fmt.Printf("  %s success=%v\n", green("[OK]"), d.AckResponse.Success)
+	default:
+		fmt.Printf("  %s (no data)\n", green("[OK]"))
+	}
+}
+
+// ================================================================
 // gRPC Client
 // ================================================================
 
@@ -464,7 +683,16 @@ func printHelp() {
 		{"consume <ns> <topic> <queueId> [batch] [autoack]", "Consume messages"},
 		{"ack <ns> <topic> <queueId> <msgId1,msgId2,...>", "Acknowledge messages"},
 		{"subscribe <ns> <topic> <queueId> [count]", "Subscribe via gRPC stream"},
+		{"tcp-pub <ns> <topic> <json>", "Publish via TCP (JSON encoding)"},
+		{"tcp-consume <ns> <topic> <queueId> [batch]", "Consume via TCP (JSON encoding)"},
+		{"ptcp-pub <ns> <topic> <json>", "Publish via TCP (Protobuf encoding)"},
+		{"ptcp-consume <ns> <topic> <queueId> [batch]", "Consume via TCP (Protobuf encoding)"},
+		{"ptcp-create-ns <name>", "Create namespace via TCP (Protobuf)"},
+		{"ptcp-list-ns", "List namespaces via TCP (Protobuf)"},
+		{"ptcp-create-topic <ns> <name> <queues>", "Create topic via TCP (Protobuf)"},
+		{"ptcp-list-topics <ns>", "List topics via TCP (Protobuf)"},
 		{"demo", "Run full demo (all features + work stealing)"},
+		{"demo-protocol", "Run multi-protocol demo (HTTP+gRPC+TCP)"},
 		{"help", "Show this help"},
 		{"quit / exit", "Exit"},
 	}
@@ -621,6 +849,7 @@ func runREPL(httpAddr, grpcAddr, tcpAddr string) {
 
 	var gc *GRPCClient
 	var tc *TCPClient
+	var ptc *ProtoTCPClient
 
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -776,6 +1005,93 @@ func runREPL(httpAddr, grpcAddr, tcpAddr string) {
 			}
 			err = tc.Consume(args[0], args[1], qid, batch, true)
 
+		case "ptcp-create-ns":
+			if len(args) < 1 {
+				fmt.Println(red("  Usage: ptcp-create-ns <name>"))
+				continue
+			}
+			if ptc == nil {
+				ptc, err = NewProtoTCPClient(tcpAddr)
+				if err != nil {
+					fmt.Printf("  %s TCP(protobuf) connect failed: %v\n", red("[ERR]"), err)
+					continue
+				}
+			}
+			err = ptc.CreateNamespace(args[0])
+
+		case "ptcp-list-ns":
+			if ptc == nil {
+				ptc, err = NewProtoTCPClient(tcpAddr)
+				if err != nil {
+					fmt.Printf("  %s TCP(protobuf) connect failed: %v\n", red("[ERR]"), err)
+					continue
+				}
+			}
+			err = ptc.ListNamespaces()
+
+		case "ptcp-create-topic":
+			if len(args) < 3 {
+				fmt.Println(red("  Usage: ptcp-create-topic <ns> <name> <queue_count>"))
+				continue
+			}
+			if ptc == nil {
+				ptc, err = NewProtoTCPClient(tcpAddr)
+				if err != nil {
+					fmt.Printf("  %s TCP(protobuf) connect failed: %v\n", red("[ERR]"), err)
+					continue
+				}
+			}
+			qc, _ := strconv.Atoi(args[2])
+			err = ptc.CreateTopic(args[0], args[1], qc)
+
+		case "ptcp-list-topics":
+			if len(args) < 1 {
+				fmt.Println(red("  Usage: ptcp-list-topics <ns>"))
+				continue
+			}
+			if ptc == nil {
+				ptc, err = NewProtoTCPClient(tcpAddr)
+				if err != nil {
+					fmt.Printf("  %s TCP(protobuf) connect failed: %v\n", red("[ERR]"), err)
+					continue
+				}
+			}
+			err = ptc.ListTopics(args[0])
+
+		case "ptcp-pub":
+			if len(args) < 3 {
+				fmt.Println(red("  Usage: ptcp-pub <ns> <topic> <json-payload>"))
+				continue
+			}
+			if ptc == nil {
+				ptc, err = NewProtoTCPClient(tcpAddr)
+				if err != nil {
+					fmt.Printf("  %s TCP(protobuf) connect failed: %v\n", red("[ERR]"), err)
+					continue
+				}
+			}
+			payloadStr := strings.Join(args[2:], " ")
+			err = ptc.Publish(args[0], args[1], []byte(payloadStr))
+
+		case "ptcp-consume":
+			if len(args) < 3 {
+				fmt.Println(red("  Usage: ptcp-consume <ns> <topic> <queueId> [batch_size]"))
+				continue
+			}
+			if ptc == nil {
+				ptc, err = NewProtoTCPClient(tcpAddr)
+				if err != nil {
+					fmt.Printf("  %s TCP(protobuf) connect failed: %v\n", red("[ERR]"), err)
+					continue
+				}
+			}
+			qid, _ := strconv.Atoi(args[2])
+			batch := 1
+			if len(args) > 3 {
+				batch, _ = strconv.Atoi(args[3])
+			}
+			err = ptc.Consume(args[0], args[1], qid, batch, true)
+
 		case "demo":
 			runDemo(httpAddr)
 
@@ -792,6 +1108,9 @@ func runREPL(httpAddr, grpcAddr, tcpAddr string) {
 			}
 			if tc != nil {
 				tc.Close()
+			}
+			if ptc != nil {
+				ptc.Close()
 			}
 			return
 
